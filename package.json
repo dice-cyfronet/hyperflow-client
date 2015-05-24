@@ -15,6 +15,9 @@
     "workflow",
     "workflows"
   ],
+  "bin": {
+    "hflowc": "./bin/hflow.c"
+  },
   "author": "m.pawlik@cyfronet.pl",
   "license": "MIT",
   "bugs": {
