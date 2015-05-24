@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/dice-cyfronet/hyperflow-client/issues"
   },
-  "homepage": "https://github.com/dice-cyfronet/hyperflow-client"
+  "homepage": "https://github.com/dice-cyfronet/hyperflow-client",
+  "dependencies": {
+    "docopt": "^0.6.2"
+  }
 }
