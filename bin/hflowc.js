@@ -10,7 +10,7 @@ Usage:\n\
 ';
 
 var wfMainId = 19;
-var wfWorkerId = 18;
+var wfWorkerId = 21;
 
 function readProxy(proxyLocation, cb) {
     fs.readFile(proxyLocation, {encoding: 'utf8'}, function (err, proxyContents) {
