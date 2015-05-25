@@ -10,7 +10,7 @@ Usage:\n\
 ';
 
 var wfMainId = 19;
-var wfWorkerId = 19;
+var wfWorkerId = 18;
 
 function readProxy(proxyLocation, cb) {
     fs.readFile(proxyLocation, {encoding: 'utf8'}, function (err, proxyContents) {
@@ -58,11 +58,11 @@ if (opts.run) {
                     return;
                 }
                 if (virtualMachine.state == 'active') {
-                    console.log('vm active');
+                    console.log('hfmain active!');
                     cb(null, virtualMachine);
                     return;
                 }
-                console.log('vm inactive');
+                console.log('hfmain inactive...');
                 setTimeout(function () {
                     waitForVirtualMachine(vmId, cb)
                 }, 1000);
@@ -105,7 +105,28 @@ if (opts.run) {
                     });
                     waitForVirtualMachine(vmId, function(err, virtualMachine) {
                         var internalIp = virtualMachine.ip;
-                        //launch workers and workflow
+                        var rabbitUrl = 'amqp://' + virtualMachine.ip;
+                        var basedProxy = new Buffer(proxy).toString('base64');
+
+                        //start a worker
+                        atmoClient.newAppliance(
+                            {
+                                setId: 53,
+                                name: 'wfworker',
+                                templateId: wfWorkerId,
+                                params: {
+                                    rabbitmq_location: rabbitUrl,
+                                    proxy: basedProxy
+                                }
+                            }, function (err, appliance) {
+                                if (err) {
+                                    console.log('Error creating appliance!', err);
+                                    return;
+                                }
+                                //timeout possibly?
+                                //call hyperflow, start workflow
+                            }
+                        )
                     });
                 });
             }
