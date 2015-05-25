@@ -36,19 +36,36 @@ if (opts.run) {
 
         var atmoClient = atmoClientFactory.createClient(atmoLocation, proxy);
 
-        atmoClient.newApplianceSet(
-            [{
-                applianceId: wfMainId,
-                params: null,
-                vms: [{cpu: 1, mem: 512}]
-            }], function (err, applianceSetId) {
+        //atmoClient.newApplianceSet(
+        //    [
+        //{
+        //    applianceId: wfMainId,
+        //    params: null,
+        //    vms: [{cpu: 1, mem: 512}]
+        //}
+        //], function (err, applianceSetId) {
+        //    if (err) {
+        //        console.log('Error creating appliance set!', err);
+        //        return;
+        //    }
+        //    console.log('Appliance set id: ' + applianceSetId + ' created successfully!')
+        //
+        atmoClient.newAppliance(
+            {
+                //setId: applianceSetId,
+                setId: 53,
+                name: 'wfmain',
+                templateId: wfMainId
+            }, function (err, applianceId) {
                 if (err) {
                     console.log('Error creating appliance!', err);
                     return;
                 }
-                console.log('Appliance id: ' + applianceSetId + ' created successfully!')
+                console.log('Appliance id: ' + applianceId + ' created successfully!')
             }
         );
+        //}
+        //);
     });
 }
 
