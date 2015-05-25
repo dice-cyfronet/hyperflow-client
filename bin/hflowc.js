@@ -13,7 +13,7 @@ var wfMainId = 19;
 var wfWorkerId = 19;
 
 function readProxy(proxyLocation, cb) {
-    fs.readFile(proxyLocation, function (err, proxyContents) {
+    fs.readFile(proxyLocation, {encoding: 'utf8'}, function (err, proxyContents) {
         if (err) {
             cb(err);
             return;
@@ -25,12 +25,12 @@ function readProxy(proxyLocation, cb) {
 var opts = docopt(doc);
 
 var proxyLocation = process.env.X509_USER_PROXY ? process.env.X509_USER_PROXY : 'proxy.pem';
-var atmoLocation = process.env.ATMOSPHERE_URL ? process.env.ATMOSPHERE_URL : 'https://cloud-dev.plgrid.pl/api/v1';
+var atmoLocation = process.env.ATMOSPHERE_URL ? process.env.ATMOSPHERE_URL : 'cloud-dev.plgrid.pl';
 
 if (opts.run) {
     readProxy(proxyLocation, function (err, proxy) {
         if (err) {
-            console.log('Error reading proxy! forgot to do a voms-proxy-init?');
+            console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
             return;
         }
 
