@@ -41,12 +41,12 @@ if (opts.run) {
                 applianceId: wfMainId,
                 params: null,
                 vms: [{cpu: 1, mem: 512}]
-            }], function (err) {
+            }], function (err, applianceSetId) {
                 if (err) {
                     console.log('Error creating appliance!', err);
                     return;
                 }
-                console.log('Appliance created successfully!')
+                console.log('Appliance id: ' + applianceSetId + ' created successfully!')
             }
         );
     });
