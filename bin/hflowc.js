@@ -50,18 +50,64 @@ if (opts.run) {
         //    }
         //    console.log('Appliance set id: ' + applianceSetId + ' created successfully!')
         //
+
+        function waitForVirtualMachine(vmId, cb) {
+            atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
+                if (err) {
+                    console.log('Error getting vm!', err);
+                    return;
+                }
+                if (virtualMachine.state == 'active') {
+                    console.log('vm active');
+                    cb(null, virtualMachine);
+                    return;
+                }
+                console.log('vm inactive');
+                setTimeout(function () {
+                    waitForVirtualMachine(vmId, cb)
+                }, 1000);
+            });
+        }
+
         atmoClient.newAppliance(
             {
                 //setId: applianceSetId,
                 setId: 53,
                 name: 'wfmain',
                 templateId: wfMainId
-            }, function (err, applianceId) {
+            }, function (err, appliance) {
                 if (err) {
                     console.log('Error creating appliance!', err);
                     return;
                 }
-                console.log('Appliance id: ' + applianceId + ' created successfully!')
+                console.log('Appliance: ' + appliance.id + ' created successfully!');
+
+                var vmId = appliance.virtual_machine_ids[0];
+                atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
+                    if (err) {
+                        console.log('Error getting vm!', err);
+                        return;
+                    }
+                    var hfIp, hfPort;
+                    atmoClient.getPortMappings(function (err, portMappings) {
+                        if (err) {
+                            console.log('Error getting port mappings!', err);
+                            return;
+                        }
+                        portMappings.forEach(function (portMapping) {
+                            if (portMapping.virtual_machine_id == vmId) {
+                                //found our vm!
+                                hfIp = portMapping.public_ip;
+                                hfPort = portMapping.source_port;
+                                console.log('Found port mapping', hpIp, hfPort);
+                            }
+                        });
+                    });
+                    waitForVirtualMachine(vmId, function(err, virtualMachine) {
+                        var internalIp = virtualMachine.ip;
+                        //launch workers and workflow
+                    });
+                });
             }
         );
         //}
