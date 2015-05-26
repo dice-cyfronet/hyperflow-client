@@ -6,7 +6,7 @@ var docopt = require('docopt').docopt,
 
 var doc = '\
 Usage:\n\
-    hflowc run \<wf_file.json\>\n\
+    hflowc bootstrap \<wf_file.json\>\n\
 ';
 
 var wfMainId = 19;
@@ -27,7 +27,7 @@ var opts = docopt(doc);
 var proxyLocation = process.env.X509_USER_PROXY ? process.env.X509_USER_PROXY : 'proxy.pem';
 var atmoLocation = process.env.ATMOSPHERE_URL ? process.env.ATMOSPHERE_URL : 'cloud-dev.plgrid.pl';
 
-if (opts.run) {
+if (opts.bootstrap) {
     readProxy(proxyLocation, function (err, proxy) {
         if (err) {
             console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
