@@ -2,24 +2,25 @@
 
 var docopt = require('docopt').docopt,
     atmoClientFactory = require('../lib/atmosphere_client'),
+    hyperflowClientFactory = require('../lib/hyperflow_client'),
     fs = require('fs');
 
 var doc = '\
 Usage:\n\
     hflowc bootstrap\n\
-    hflowc runwf \<workflow.json\>\n\
+    hflowc runwf \<hf_location\> \<workflow.json\>\n\
 ';
 
 var wfMainId = 19;
-var wfWorkerId = 23;
+var wfWorkerId = 25;
 
-function readProxy(proxyLocation, cb) {
-    fs.readFile(proxyLocation, {encoding: 'utf8'}, function (err, proxyContents) {
+function readFile(fileLocation, cb) {
+    fs.readFile(fileLocation, {encoding: 'utf8'}, function (err, fileContents) {
         if (err) {
             cb(err);
             return;
         }
-        cb(null, proxyContents);
+        cb(null, fileContents);
     });
 }
 
@@ -29,7 +30,7 @@ var proxyLocation = process.env.X509_USER_PROXY ? process.env.X509_USER_PROXY : 
 var atmoLocation = process.env.ATMOSPHERE_URL ? process.env.ATMOSPHERE_URL : 'cloud-dev.plgrid.pl';
 
 if (opts.bootstrap) {
-    readProxy(proxyLocation, function (err, proxy) {
+    readFile(proxyLocation, function (err, proxy) {
         if (err) {
             console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
             return;
@@ -140,5 +141,21 @@ if (opts.bootstrap) {
         //);
     });
 } else if (opts.runwf) {
+    var hyperFlowClient = hyperflowClientFactory.createClient(opts['<hf_location>']);
+
+    readFile(opts['<workflow.json>'], function (err, workflow) {
+        if (err) {
+            console.log('Error reading wf:', err);
+            return;
+        }
+
+        hyperFlowClient.runWorkflow(workflow, function (err, workflowLocation) {
+            if (err) {
+                console.log('Error running wf:', err);
+                return;
+            }
+            console.log('workflow started: ', opts['<hf_location>'] + workflowLocation);
+        });
+    });
 
 }
