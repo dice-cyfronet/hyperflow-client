@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/dice-cyfronet/hyperflow-client",
   "dependencies": {
+    "async": "^1.3.0",
     "docopt": "^0.6.2"
   }
 }
