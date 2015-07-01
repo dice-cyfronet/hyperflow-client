@@ -7,13 +7,20 @@ var docopt = require('docopt').docopt,
 
 var doc = '\
 Usage:\n\
-    hflowc setup\n\
+    hflowc setup [-p <proxy_location>]\n\
     hflowc runwf \<hf_location\> \<workflow.json\>\n\
-    hflowc teardown\n\
+    hflowc teardown [-p <proxy_location>]\n\
+    \n\
+Options:\n\
+    -p <proxy_location> --proxy=<proxy_location>  Location of proxy, defaults to env[X509_USER_PROXY]\n\
+    \n\
 ';
 
 var wfMainId = 19;
 var wfWorkerId = 25;
+
+var proxyLocation = process.env.X509_USER_PROXY ? process.env.X509_USER_PROXY : 'proxy.pem';
+var atmoLocation = process.env.ATMOSPHERE_URL ? process.env.ATMOSPHERE_URL : 'cloud-dev.plgrid.pl';
 
 function readFile(fileLocation, cb) {
     fs.readFile(fileLocation, {encoding: 'utf8'}, function (err, fileContents) {
@@ -26,9 +33,6 @@ function readFile(fileLocation, cb) {
 }
 
 var opts = docopt(doc);
-
-var proxyLocation = process.env.X509_USER_PROXY ? process.env.X509_USER_PROXY : 'proxy.pem';
-var atmoLocation = process.env.ATMOSPHERE_URL ? process.env.ATMOSPHERE_URL : 'cloud-dev.plgrid.pl';
 
 if (opts.setup) {
     readFile(proxyLocation, function (err, proxy) {
@@ -160,5 +164,4 @@ if (opts.setup) {
     });
 
 } else if (opts.teardown) {
-
 }
