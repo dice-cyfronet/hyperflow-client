@@ -4,50 +4,61 @@ var docopt = require('docopt').docopt,
     atmoClientFactory = require('../lib/atmosphere_client'),
     hyperflowClientFactory = require('../lib/hyperflow_client'),
     fs = require('fs'),
-    defaultConfig = require('../lib/hflowc.config.js');
+    utils = require('../lib/utils.js'),
+    configHelper = require('../lib/hflowc.config.js');
 
 var doc = '\
 Usage:\n\
-    hflowc setup [-p <proxy_location>]\n\
-    hflowc runwf \<hf_location\> \<workflow.json\>\n\
-    hflowc teardown [-p <proxy_location>]\n\
+    hflowc setup [-p <proxy_location>] [-c <config_location>]\n\
+    hflowc runwf \<hf_location\> \<workflow.json\> [-c <config_location>]\n\
+    hflowc teardown [-p <proxy_location>] [-c <config_location>]\n\
     \n\
 Options:\n\
     -p <proxy_location> --proxy=<proxy_location>  Location of proxy, defaults to env[X509_USER_PROXY]\n\
+    -c <config_location> --config=<config_location> Location of custom config file\
     \n\
 ';
 
-var wfMainId = defaultConfig.wfMainId;
-var wfWorkerId = defaultConfig.wfWorkerId;
-
-var proxyLocation = defaultConfig.proxyLocation;
-var atmoLocation = defaultConfig.atmoLocation;
-
-function readFile(fileLocation, cb) {
-    fs.readFile(fileLocation, {encoding: 'utf8'}, function (err, fileContents) {
-        if (err) {
-            cb(err);
-            return;
-        }
-        cb(null, fileContents);
-    });
-}
-
 var opts = docopt(doc);
 
+
+//config stuff
+var config = configHelper.default_config;
+var localConfigs = [];
+
+//load configs
+configHelper.configLocations.forEach(function (configLocation) {
+    if (fs.exists(configLocation)) {
+        utils.readFile(configLocation, function (rawConfig) {
+            var position = configHelper.configLocations.indexOf(configLocation);
+            localConfigs[position] = JSON.parse(rawConfig);
+        });
+    }
+});
+
+//merge configs with default values
+localConfigs.forEach(function (localConfig) {
+    for (attr in localConfig) {
+        if (localConfig.hasOwnProperty(attr)) {
+            config[attr] = localConfig[attr];
+        }
+    }
+});
+
+
 if (opts.setup) {
-    readFile(proxyLocation, function (err, proxy) {
+    readFile(config.proxyLocation, function (err, proxy) {
         if (err) {
             console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
             return;
         }
 
-        var atmoClient = atmoClientFactory.createClient(atmoLocation, proxy);
+        var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
 
         //atmoClient.newApplianceSet(
         //    [
         //{
-        //    applianceId: wfMainId,
+        //    applianceId: config.wfMainId,
         //    params: null,
         //    vms: [{cpu: 1, mem: 512}]
         //}
@@ -82,7 +93,7 @@ if (opts.setup) {
                 //setId: applianceSetId,
                 setId: 53,
                 name: 'wfmain',
-                templateId: wfMainId
+                templateId: config.wfMainId
             }, function (err, appliance) {
                 if (err) {
                     console.log('Error creating appliance!', err);
@@ -124,7 +135,7 @@ if (opts.setup) {
                             {
                                 setId: 53,
                                 name: 'wfworker',
-                                templateId: wfWorkerId,
+                                templateId: config.wfWorkerId,
                                 params: {
                                     rabbitmq_location: rabbitUrl,
                                     proxy: basedProxy
