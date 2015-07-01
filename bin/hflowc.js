@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var docopt = require('docopt').docopt,
+    expandHomeDir = require('expand-home-dir'),
     atmoClientFactory = require('../lib/atmosphere_client'),
     hyperflowClientFactory = require('../lib/hyperflow_client'),
     fs = require('fs'),
@@ -28,12 +29,15 @@ var localConfigs = [];
 
 //load configs
 configHelper.configLocations.forEach(function (configLocation) {
-    if (fs.exists(configLocation)) {
-        utils.readFile(configLocation, function (rawConfig) {
-            var position = configHelper.configLocations.indexOf(configLocation);
-            localConfigs[position] = JSON.parse(rawConfig);
-        });
-    }
+    var absoluteConfigLocation = expandHomeDir(configLocation);
+    fs.exists(absoluteConfigLocation, function (exists) {
+        if (exists) {
+            utils.readFile(absoluteConfigLocation, function (rawConfig) {
+                var position = configHelper.configLocations.indexOf(configLocation);
+                localConfigs[position] = JSON.parse(rawConfig);
+            });
+        }
+    });
 });
 
 //merge configs with default values
