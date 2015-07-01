@@ -7,8 +7,9 @@ var docopt = require('docopt').docopt,
 
 var doc = '\
 Usage:\n\
-    hflowc bootstrap\n\
+    hflowc setup\n\
     hflowc runwf \<hf_location\> \<workflow.json\>\n\
+    hflowc teardown\n\
 ';
 
 var wfMainId = 19;
@@ -29,7 +30,7 @@ var opts = docopt(doc);
 var proxyLocation = process.env.X509_USER_PROXY ? process.env.X509_USER_PROXY : 'proxy.pem';
 var atmoLocation = process.env.ATMOSPHERE_URL ? process.env.ATMOSPHERE_URL : 'cloud-dev.plgrid.pl';
 
-if (opts.bootstrap) {
+if (opts.setup) {
     readFile(proxyLocation, function (err, proxy) {
         if (err) {
             console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
@@ -157,5 +158,7 @@ if (opts.bootstrap) {
             console.log('workflow started: ', opts['<hf_location>'] + workflowLocation);
         });
     });
+
+} else if (opts.teardown) {
 
 }
