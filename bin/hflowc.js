@@ -32,9 +32,17 @@ configHelper.configLocations.forEach(function (configLocation) {
     var absoluteConfigLocation = expandHomeDir(configLocation);
     fs.exists(absoluteConfigLocation, function (exists) {
         if (exists) {
-            utils.readFile(absoluteConfigLocation, function (rawConfig) {
-                var position = configHelper.configLocations.indexOf(configLocation);
-                localConfigs[position] = JSON.parse(rawConfig);
+            var position = configHelper.configLocations.indexOf(configLocation);
+            utils.readFile(absoluteConfigLocation, function (err, rawConfig) {
+                if (err) {
+                    console.log("Unable to read config from: ", absoluteConfigLocation);
+                    return;
+                }
+                try {
+                    localConfigs[position] = JSON.parse(rawConfig);
+                } catch (err) {
+                    console.log("Unable to read config from: ", absoluteConfigLocation);
+                }
             });
         }
     });
@@ -49,6 +57,7 @@ localConfigs.forEach(function (localConfig) {
     }
 });
 
+console.log(config);
 
 if (opts.setup) {
     readFile(config.proxyLocation, function (err, proxy) {
