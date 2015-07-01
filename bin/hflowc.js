@@ -3,7 +3,8 @@
 var docopt = require('docopt').docopt,
     atmoClientFactory = require('../lib/atmosphere_client'),
     hyperflowClientFactory = require('../lib/hyperflow_client'),
-    fs = require('fs');
+    fs = require('fs'),
+    defaultConfig = require('../lib/hflowc.config.js');
 
 var doc = '\
 Usage:\n\
@@ -16,11 +17,11 @@ Options:\n\
     \n\
 ';
 
-var wfMainId = 19;
-var wfWorkerId = 25;
+var wfMainId = defaultConfig.wfMainId;
+var wfWorkerId = defaultConfig.wfWorkerId;
 
-var proxyLocation = process.env.X509_USER_PROXY ? process.env.X509_USER_PROXY : 'proxy.pem';
-var atmoLocation = process.env.ATMOSPHERE_URL ? process.env.ATMOSPHERE_URL : 'cloud-dev.plgrid.pl';
+var proxyLocation = defaultConfig.proxyLocation;
+var atmoLocation = defaultConfig.atmoLocation;
 
 function readFile(fileLocation, cb) {
     fs.readFile(fileLocation, {encoding: 'utf8'}, function (err, fileContents) {
