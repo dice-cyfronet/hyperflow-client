@@ -16,7 +16,7 @@
     "workflows"
   ],
   "bin": {
-    "hflowc": "./bin/hflow.js"
+    "hflowc": "./bin/hflow"
   },
   "author": "m.pawlik@cyfronet.pl",
   "license": "MIT",

@@ -52,7 +52,7 @@ utils.loadConfigs(configLocations, function (localConfigs) {
 function chooseCommand(opts, config) {
     if (opts.setup) {
 
-        readFile(config.proxyLocation, function (err, proxy) {
+        utils.readFile(config.proxyLocation, function (err, proxy) {
             if (err) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
                 return;
@@ -79,6 +79,7 @@ function chooseCommand(opts, config) {
                 atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
                     if (err) {
                         console.log('Error getting vm!', err);
+                        cb(err);
                         return;
                     }
                     if (virtualMachine.state == 'active') {
@@ -165,7 +166,7 @@ function chooseCommand(opts, config) {
     } else if (opts.runwf) {
         var hyperFlowClient = hyperflowClientFactory.createClient(opts['<hf_location>']);
 
-        readFile(opts['<workflow.json>'], function (err, workflow) {
+        utils.readFile(opts['<workflow.json>'], function (err, workflow) {
             if (err) {
                 console.log('Error reading wf:', err);
                 return;
