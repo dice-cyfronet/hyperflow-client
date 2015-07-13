@@ -40,6 +40,10 @@ utils.loadConfigs(configLocations, function (localConfigs) {
         }
     });
 
+    if (opts['--proxy']) {
+        config.proxyLocation = opts['--proxy'];
+    }
+
     //configs ready, choose operation
     chooseCommand(opts, config);
 });
