@@ -10,8 +10,8 @@ var docopt = require('docopt').docopt,
 
 var doc = '\
 Usage:\n\
-    hflowc setup [-p <proxy_location>] [-c <config_location>]\n\
-    hflowc runwf \<hf_location\> \<workflow.json\> [-c <config_location>]\n\
+    hflowc setup [-p <proxy_location>] [-c <config_location>] [-n <worker_count>]\n\
+    hflowc runwf <hf_location> <workflow.json> [-c <config_location>]\n\
     hflowc teardown [-p <proxy_location>] [-c <config_location>]\n\
     \n\
 Options:\n\
@@ -42,6 +42,7 @@ utils.loadConfigs(configHelper.configLocations, function (localConfigs) {
 
 function chooseCommand(opts, config) {
     if (opts.setup) {
+
         readFile(config.proxyLocation, function (err, proxy) {
             if (err) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
