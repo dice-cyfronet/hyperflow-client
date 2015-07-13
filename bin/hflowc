@@ -60,12 +60,15 @@ function chooseCommand(opts, config) {
 
             var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
 
-            atmoClient.newApplianceSet(null, function (err, applianceSet) {
+            var applianceSetId;
+
+            atmoClient.newApplianceSet('workflow', null, function (err, applianceSet) {
                 if (err) {
                     console.log('Error creating appliance set!', err);
                     return;
                 }
                 console.log('Appliance set id: ' + applianceSet.id + ' created successfully!');
+                applianceSetId = applianceSet.id;
             });
 
 
