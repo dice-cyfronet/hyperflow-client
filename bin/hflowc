@@ -33,7 +33,7 @@ if (opts['--config']) {
 
 utils.loadConfigs(configLocations, function (localConfigs) {
     localConfigs.forEach(function (localConfig) {
-        for (attr in localConfig) {
+        for (var attr in localConfig) {
             if (localConfig.hasOwnProperty(attr)) {
                 config[attr] = localConfig[attr];
             }
