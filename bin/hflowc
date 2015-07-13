@@ -25,8 +25,13 @@ var opts = docopt(doc);
 
 //config stuff
 var config = configHelper.default_config;
+var configLocations = configHelper.configLocations;
 
-utils.loadConfigs(configHelper.configLocations, function (localConfigs) {
+if (opts['--config']) {
+    configLocations.push(opts['--config']);
+}
+
+utils.loadConfigs(configLocations, function (localConfigs) {
     localConfigs.forEach(function (localConfig) {
         for (attr in localConfig) {
             if (localConfig.hasOwnProperty(attr)) {
