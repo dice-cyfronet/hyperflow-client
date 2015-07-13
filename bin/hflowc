@@ -60,20 +60,14 @@ function chooseCommand(opts, config) {
 
             var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
 
-            //atmoClient.newApplianceSet(
-            //    [
-            //{
-            //    applianceId: config.wfMainId,
-            //    params: null,
-            //    vms: [{cpu: 1, mem: 512}]
-            //}
-            //], function (err, applianceSetId) {
-            //    if (err) {
-            //        console.log('Error creating appliance set!', err);
-            //        return;
-            //    }
-            //    console.log('Appliance set id: ' + applianceSetId + ' created successfully!')
-            //
+            atmoClient.newApplianceSet(null, function (err, applianceSet) {
+                if (err) {
+                    console.log('Error creating appliance set!', err);
+                    return;
+                }
+                console.log('Appliance set id: ' + applianceSet.id + ' created successfully!');
+            });
+
 
             function waitForVirtualMachine(vmId, cb) {
                 atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
@@ -94,6 +88,7 @@ function chooseCommand(opts, config) {
                 });
             }
 
+            return;
             atmoClient.newAppliance(
                 {
                     //setId: applianceSetId,
