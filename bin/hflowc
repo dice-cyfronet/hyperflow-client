@@ -59,7 +59,7 @@ function chooseCommand(opts, config) {
             }
 
             var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
-
+            var basedProxy = new Buffer(proxy).toString('base64');
             var applianceSetId;
 
             atmoClient.newApplianceSet('workflow', null, function (err, applianceSet) {
@@ -94,7 +94,10 @@ function chooseCommand(opts, config) {
                     {
                         setId: applianceSetId,
                         name: 'wfmain',
-                        templateId: config.wfMainId
+                        templateId: config.wfMainId,
+                        params: {
+                            proxy: basedProxy
+                        }
                     }, function (err, appliance) {
                         if (err) {
                             console.log('Error creating appliance!', err);
@@ -145,13 +148,12 @@ function chooseCommand(opts, config) {
 
                                 var internalIp = virtualMachine.ip;
                                 var rabbitUrl = 'amqp://' + virtualMachine.ip;
-                                var basedProxy = new Buffer(proxy).toString('base64');
 
-                                return;
                                 //start a worker
+                                return;
                                 atmoClient.newAppliance(
                                     {
-                                        setId: 53,
+                                        setId: applianceSetId,
                                         name: 'wfworker',
                                         templateId: config.wfWorkerId,
                                         params: {
