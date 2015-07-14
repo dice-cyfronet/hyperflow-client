@@ -109,10 +109,16 @@ function chooseCommand(opts, config) {
                                 return;
                             }
                             waitForVirtualMachine(vmId, function (err, virtualMachine) {
+                                if (err) {
+                                    console.log('Error waiting for vm!', err);
+                                    return;
+                                }
 
+                                //get hf location
                                 atmoClient.getPortMappings(function (err, portMappings) {
-                                    var hfIp, hfPort;
-                                    //console.log(JSON.stringify(portMappings));
+                                    var hfIp,
+                                        hfPort,
+                                        portMappingTemplateId;
                                     if (err) {
                                         console.log('Error getting port mappings!', err);
                                         return;
@@ -122,7 +128,17 @@ function chooseCommand(opts, config) {
                                             //found our vm!
                                             hfIp = portMapping.public_ip;
                                             hfPort = portMapping.source_port;
-                                            console.log('Found port mapping, hfmain endoint: http://' + hfIp + ':' + hfPort);
+                                            portMappingTemplateId = portMapping.port_mapping_template_id;
+                                            atmoClient.getPortMappingTemplate(portMappingTemplateId, function (err, portMappingTemplate) {
+                                                if (err) {
+                                                    console.log('Error getting port mapping template!', err);
+                                                    return;
+                                                }
+                                                var targetPort = portMappingTemplate.target_port;
+                                                if (targetPort == 443) {
+                                                    console.log('Found port mapping ' + hfPort + '->' + targetPort + ', hfmain endoint: http://' + hfIp + ':' + hfPort);
+                                                }
+                                            });
                                         }
                                     });
                                 });
@@ -131,6 +147,7 @@ function chooseCommand(opts, config) {
                                 var rabbitUrl = 'amqp://' + virtualMachine.ip;
                                 var basedProxy = new Buffer(proxy).toString('base64');
 
+                                return;
                                 //start a worker
                                 atmoClient.newAppliance(
                                     {
@@ -147,8 +164,6 @@ function chooseCommand(opts, config) {
                                             return;
                                         }
                                         console.log('starting workers...');
-                                        //timeout possibly?
-                                        //call hyperflow, start workflow
                                     }
                                 )
                             });
