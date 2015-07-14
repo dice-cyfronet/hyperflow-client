@@ -14,10 +14,9 @@ Usage:\n\
     hflowc teardown [-p <proxy_location>] [-c <config_location>]\n\
     \n\
 Options:\n\
-    -p <proxy_location> --proxy=<proxy_location>  Location of proxy, defaults to env[X509_USER_PROXY]\n\
-    -c <config_location> --config=<config_location> Location of custom config file\
-    -w <worker_count> --workers=<worker_count> Number of worker vms to be used in workflow\
-    \n\
+    -p <proxy_location>, --proxy <proxy_location>  Location of proxy, defaults to env[X509_USER_PROXY]\n\
+    -c <config_location>, --config <config_location> Location of custom config file\n\
+    -w <worker_count>, --workers <worker_count> Number of worker vms to be used in workflow\n\
 ';
 
 var opts = docopt(doc);
@@ -60,7 +59,7 @@ function chooseCommand(opts, config) {
 
             var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
             var basedProxy = new Buffer(proxy).toString('base64');
-            var workerCount = opts['--workers'] ? opts['--workers'] : 1;
+            var workerCount = opts['--workers'] ? +opts['--workers'] : 1;
             var applianceSetId;
 
             atmoClient.newApplianceSet(config.wfApplianceSetName, null, function (err, applianceSet) {
@@ -150,25 +149,36 @@ function chooseCommand(opts, config) {
                                 var internalIp = virtualMachine.ip;
                                 var rabbitUrl = 'amqp://' + virtualMachine.ip;
 
-                                //start a worker
-                                //asyns.times(workerCount, )
-                                atmoClient.newAppliance(
-                                    {
-                                        setId: applianceSetId,
-                                        name: 'wfworker',
-                                        templateId: config.wfWorkerId,
-                                        params: {
-                                            rabbitmq_location: rabbitUrl,
-                                            proxy: basedProxy
+                                //start workers
+
+                                async.times(workerCount, function (n, cb) {
+                                    var workerName = 'wfworker_' + n;
+                                    atmoClient.newAppliance(
+                                        {
+                                            setId: applianceSetId,
+                                            name: workerName,
+                                            templateId: config.wfWorkerId,
+                                            params: {
+                                                rabbitmq_location: rabbitUrl,
+                                                proxy: basedProxy
+                                            }
+                                        }, function (err, appliance) {
+                                            if (err) {
+                                                console.log('Error creating worker!', err);
+                                                cb(err);
+                                                return;
+                                            }
+                                            console.log('starting ' + workerName);
+                                            cb(null);
                                         }
-                                    }, function (err, appliance) {
-                                        if (err) {
-                                            console.log('Error creating workers!', err);
-                                            return;
-                                        }
-                                        console.log('starting workers...');
+                                    )
+                                }, function (err, results) {
+                                    if(err) {
+                                        console.log("Error creating workers!", err);
+                                        return;
                                     }
-                                )
+                                    console.log("Workers created");
+                                });
                             });
                         });
                     }
