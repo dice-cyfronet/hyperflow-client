@@ -211,6 +211,31 @@ function chooseCommand(opts, config) {
         });
 
     } else if (opts.teardown) {
+        //read proxy
+        utils.readFile(config.proxyLocation, function (err, proxy) {
+            if (err) {
+                console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
+                return;
+            }
 
+            var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
+            var basedProxy = new Buffer(proxy).toString('base64');
+
+            atmoClient.getApplianceSets(function (err, applianceSets) {
+                if(err) {
+                    console.log("Error getting appliance sets!", err);
+                    return;
+                }
+                var setsToRemove = [];
+                applianceSets.forEach(function(applianceSet) {
+                    if(applianceSet['name'] == config.wfApplianceSetName) {
+                        setsToRemove.push(applianceSet.id);
+                    }
+                });
+
+                //let's remove appliance sets
+                
+            });
+        });
     }
 }
