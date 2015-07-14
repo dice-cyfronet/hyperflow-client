@@ -222,19 +222,38 @@ function chooseCommand(opts, config) {
             var basedProxy = new Buffer(proxy).toString('base64');
 
             atmoClient.getApplianceSets(function (err, applianceSets) {
-                if(err) {
+                if (err) {
                     console.log("Error getting appliance sets!", err);
                     return;
                 }
-                var setsToRemove = [];
-                applianceSets.forEach(function(applianceSet) {
-                    if(applianceSet['name'] == config.wfApplianceSetName) {
-                        setsToRemove.push(applianceSet.id);
+                var setsToRemove = {};
+                applianceSets.forEach(function (applianceSet) {
+                    if (applianceSet['name'] == config.wfApplianceSetName) {
+                        setsToRemove[applianceSet.id] = applianceSet['name'];
                     }
                 });
 
                 //let's remove appliance sets
-                
+                if (Object.keys(setsToRemove).length != 0) {
+                    async.map(Object.keys(setsToRemove), function (applianceSetId, cb) {
+                        console.log('Removint appliance set: ' + setsToRemove[applianceSetId]);
+                        atmoClient.deleteApplianceSet(applianceSetId, function (err) {
+                            if (err) {
+                                cb(err);
+                                return;
+                            }
+                            cb();
+                        });
+                    }, function (err, result) {
+                        if (err) {
+                            console.log("Error deleting appliance set!", err);
+                            return;
+                        }
+                        console.log('Done.');
+                    });
+                } else {
+                    console.log('Nothing to do.');
+                }
             });
         });
     }
