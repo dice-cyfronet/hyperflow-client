@@ -67,25 +67,23 @@ function chooseCommand(opts, config) {
                     console.log('Error creating appliance set!', err);
                     return;
                 }
-                console.log('Appliance set id: ' + applianceSet.id + ' created successfully!');
+                console.log('Appliance set ' + applianceSet['name'] + ' created successfully!');
                 applianceSetId = applianceSet.id;
 
 
-                function waitForVirtualMachine(vmId, cb) {
+                function waitForVirtualMachine(vmId, cbWait, cb) {
                     atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
                         if (err) {
-                            console.log('Error getting vm!', err);
                             cb(err);
                             return;
                         }
                         if (virtualMachine.state == 'active') {
-                            console.log('vm active!');
                             cb(null, virtualMachine);
                             return;
                         }
-                        console.log('vm inactive...');
+                        cbWait();
                         setTimeout(function () {
-                            waitForVirtualMachine(vmId, cb)
+                            waitForVirtualMachine(vmId, cbWait, cb)
                         }, 2000);
                     });
                 }
@@ -111,12 +109,16 @@ function chooseCommand(opts, config) {
                                 console.log('Error getting vm!', err);
                                 return;
                             }
-                            waitForVirtualMachine(vmId, function (err, virtualMachine) {
+                            process.stdout.write('waiting for vm to start');
+                            waitForVirtualMachine(vmId, function () {
+                                process.stdout.write('.');
+                            }, function (err, virtualMachine) {
                                 if (err) {
                                     console.log('Error waiting for vm!', err);
                                     return;
                                 }
 
+                                console.log("wfMain is active!");
                                 //get hf location
                                 atmoClient.getPortMappings(function (err, portMappings) {
                                     var hfIp,
@@ -173,7 +175,7 @@ function chooseCommand(opts, config) {
                                         }
                                     )
                                 }, function (err, results) {
-                                    if(err) {
+                                    if (err) {
                                         console.log("Error creating workers!", err);
                                         return;
                                     }
