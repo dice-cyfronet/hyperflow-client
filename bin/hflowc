@@ -92,7 +92,6 @@ function chooseCommand(opts, config) {
 
                 atmoClient.newAppliance(
                     {
-                        //setId: applianceSetId,
                         setId: applianceSetId,
                         name: 'wfmain',
                         templateId: config.wfMainId
