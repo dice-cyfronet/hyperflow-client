@@ -150,7 +150,6 @@ function chooseCommand(opts, config) {
                                 var rabbitUrl = 'amqp://' + virtualMachine.ip;
 
                                 //start a worker
-                                return;
                                 atmoClient.newAppliance(
                                     {
                                         setId: applianceSetId,
@@ -162,7 +161,7 @@ function chooseCommand(opts, config) {
                                         }
                                     }, function (err, appliance) {
                                         if (err) {
-                                            console.log('Error creating appliance!', err);
+                                            console.log('Error creating workers!', err);
                                             return;
                                         }
                                         console.log('starting workers...');
