@@ -123,7 +123,7 @@ function chooseCommand(opts, config) {
                                     return;
                                 }
 
-                                console.log("wfMain is active!");
+                                console.log('wfMain is active!');
                                 //get and print hf location
                                 atmoClient.getPortMappings(function (err, portMappings) {
                                     var hfIp,
@@ -181,10 +181,10 @@ function chooseCommand(opts, config) {
                                     )
                                 }, function (err, results) {
                                     if (err) {
-                                        console.log("Error creating workers!", err);
+                                        console.log('Error creating workers!', err);
                                         return;
                                     }
-                                    console.log("Workers created");
+                                    console.log('Workers created');
                                 });
                             });
                         });
@@ -223,7 +223,7 @@ function chooseCommand(opts, config) {
 
             atmoClient.getApplianceSets(function (err, applianceSets) {
                 if (err) {
-                    console.log("Error getting appliance sets!", err);
+                    console.log('Error getting appliance sets!', err);
                     return;
                 }
                 var setsToRemove = {};
@@ -246,7 +246,7 @@ function chooseCommand(opts, config) {
                         });
                     }, function (err, result) {
                         if (err) {
-                            console.log("Error deleting appliance set!", err);
+                            console.log('Error deleting appliance set!', err);
                             return;
                         }
                         console.log('Done.');
