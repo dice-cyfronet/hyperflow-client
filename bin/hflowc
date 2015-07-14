@@ -79,11 +79,11 @@ function chooseCommand(opts, config) {
                             return;
                         }
                         if (virtualMachine.state == 'active') {
-                            console.log('hfmain active!');
+                            console.log('vm active!');
                             cb(null, virtualMachine);
                             return;
                         }
-                        console.log('hfmain inactive...');
+                        console.log('vm inactive...');
                         setTimeout(function () {
                             waitForVirtualMachine(vmId, cb)
                         }, 2000);
@@ -102,7 +102,6 @@ function chooseCommand(opts, config) {
                         }
                         console.log('WfMain created successfully!');
 
-                        return;
                         var vmId = appliance.virtual_machine_ids[0];
                         atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
                             if (err) {
