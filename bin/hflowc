@@ -51,6 +51,7 @@ utils.loadConfigs(configLocations, function (localConfigs) {
 function chooseCommand(opts, config) {
     if (opts.setup) {
 
+        //read proxy
         utils.readFile(config.proxyLocation, function (err, proxy) {
             if (err) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
@@ -62,6 +63,7 @@ function chooseCommand(opts, config) {
             var workerCount = opts['--workers'] ? +opts['--workers'] : 1;
             var applianceSetId;
 
+            //create appliance set
             atmoClient.newApplianceSet(config.wfApplianceSetName, null, function (err, applianceSet) {
                 if (err) {
                     console.log('Error creating appliance set!', err);
@@ -88,6 +90,7 @@ function chooseCommand(opts, config) {
                     });
                 }
 
+                //create wfMain vm
                 atmoClient.newAppliance(
                     {
                         setId: applianceSetId,
@@ -102,6 +105,8 @@ function chooseCommand(opts, config) {
                             return;
                         }
                         console.log('WfMain created successfully!');
+
+                        //wait for wfMain to become active
 
                         var vmId = appliance.virtual_machine_ids[0];
                         atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
@@ -119,7 +124,7 @@ function chooseCommand(opts, config) {
                                 }
 
                                 console.log("wfMain is active!");
-                                //get hf location
+                                //get and print hf location
                                 atmoClient.getPortMappings(function (err, portMappings) {
                                     var hfIp,
                                         hfPort,
@@ -206,5 +211,6 @@ function chooseCommand(opts, config) {
         });
 
     } else if (opts.teardown) {
+
     }
 }
