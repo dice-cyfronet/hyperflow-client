@@ -4,19 +4,19 @@ var docopt = require('docopt').docopt,
     async = require('async'),
     atmoClientFactory = require('../lib/atmosphere_client'),
     hyperflowClientFactory = require('../lib/hyperflow_client'),
-    fs = require('fs'),
     utils = require('../lib/utils.js'),
     configHelper = require('../lib/hflowc.config.js');
 
 var doc = '\
 Usage:\n\
-    hflowc setup [-p <proxy_location>] [-c <config_location>] [-n <worker_count>]\n\
+    hflowc setup [-p <proxy_location>] [-c <config_location>] [-w <worker_count>]\n\
     hflowc runwf <hf_location> <workflow.json> [-c <config_location>]\n\
     hflowc teardown [-p <proxy_location>] [-c <config_location>]\n\
     \n\
 Options:\n\
     -p <proxy_location> --proxy=<proxy_location>  Location of proxy, defaults to env[X509_USER_PROXY]\n\
     -c <config_location> --config=<config_location> Location of custom config file\
+    -w <worker_count> --workers=<worker_count> Number of worker vms to be used in workflow\
     \n\
 ';
 
@@ -60,9 +60,10 @@ function chooseCommand(opts, config) {
 
             var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
             var basedProxy = new Buffer(proxy).toString('base64');
+            var workerCount = opts['--workers'] ? opts['--workers'] : 1;
             var applianceSetId;
 
-            atmoClient.newApplianceSet('workflow', null, function (err, applianceSet) {
+            atmoClient.newApplianceSet(config.wfApplianceSetName, null, function (err, applianceSet) {
                 if (err) {
                     console.log('Error creating appliance set!', err);
                     return;
@@ -150,6 +151,7 @@ function chooseCommand(opts, config) {
                                 var rabbitUrl = 'amqp://' + virtualMachine.ip;
 
                                 //start a worker
+                                //asyns.times(workerCount, )
                                 atmoClient.newAppliance(
                                     {
                                         setId: applianceSetId,
