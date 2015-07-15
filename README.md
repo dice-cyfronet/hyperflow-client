@@ -6,7 +6,7 @@ Client for, [Hyperflow](http://github.com/dice-cyfronet/hyperflow) based, workfl
 
 ## Availability
 
-This software is available pre-installed on Zeus UI, which is the intended environment for this software. Stand-alone installation is also possible, but it is not officially supported.
+This software is available pre-installed on [Zeus UI](https://docs.plgrid.pl/pages/viewpage.action?pageId=4260595), which is the intended environment for this software. Stand-alone installation is also possible, but it is not officially supported.
 
 ## Usage
 
