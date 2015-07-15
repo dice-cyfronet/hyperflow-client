@@ -1,8 +1,8 @@
 {
   "name": "hyperflow-client",
-  "version": "0.0.1",
-  "description": "Client for HyperFlow services.",
-  "main": "index.js",
+  "version": "1.0.0",
+  "description": "HyperFlow Client",
+  "main": "",
   "scripts": {
     "test": ""
   },
