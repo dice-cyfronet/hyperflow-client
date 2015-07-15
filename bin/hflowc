@@ -153,7 +153,6 @@ function chooseCommand(opts, config) {
                                     });
                                 });
 
-                                var internalIp = virtualMachine.ip;
                                 var rabbitUrl = 'amqp://' + virtualMachine.ip;
 
                                 //start workers
