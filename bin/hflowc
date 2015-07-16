@@ -114,7 +114,7 @@ function chooseCommand(opts, config) {
                                 console.log('Error getting vm!', err);
                                 return;
                             }
-                            process.stdout.write('waiting for vm to start');
+                            process.stdout.write('waiting for wfMain to start');
                             waitForVirtualMachine(vmId, function () {
                                 process.stdout.write('.');
                             }, function (err, virtualMachine) {
