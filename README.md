@@ -38,7 +38,7 @@ The Client is now available as `hflowc` command, which accepts the following act
  
 ### Configuration
 
-The Clients needs some basic configuration, which is done through the `hyperflow-client/lib/hflowc.config.js` config file.
+The Client needs some basic configuration, which is done through the `hyperflow-client/lib/hflowc.config.js` config file.
 
 ### Running
 
