@@ -241,7 +241,7 @@ function chooseCommand(opts, config) {
                 //let's remove appliance sets
                 if (Object.keys(setsToRemove).length != 0) {
                     async.map(Object.keys(setsToRemove), function (applianceSetId, cb) {
-                        console.log('Removint appliance set: ' + setsToRemove[applianceSetId]);
+                        console.log('Removing appliance set: ' + setsToRemove[applianceSetId]);
                         atmoClient.deleteApplianceSet(applianceSetId, function (err) {
                             if (err) {
                                 cb(err);
