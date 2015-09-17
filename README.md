@@ -12,7 +12,7 @@ This software is available pre-installed on [Zeus UI](https://docs.plgrid.pl/pag
 
 Add custom directory of modules:
 
-`$ export MODULEPATH=/mnt/gpfs/work/plgrid/groups/plggcore43/modules:$MODULEPATH`
+`$ export MODULEPATH=/mnt/gpfs/work/plgrid/groups/plgghflow/modules:$MODULEPATH`
 
 Enable hflow-client module
 
