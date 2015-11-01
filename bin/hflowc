@@ -12,6 +12,7 @@ Usage:\n\
     hflowc setup [-p <proxy_location>] [-c <config_location>] [-w <worker_count>]\n\
     hflowc runwf <hf_location> <workflow.json> [-p <proxy_location>] [-c <config_location>]\n\
     hflowc teardown [-p <proxy_location>] [-c <config_location>]\n\
+    hflowc healthcheck [-p <proxy_location>] [-c <config_location>]\n\
     \n\
 Options:\n\
     -p <proxy_location>, --proxy <proxy_location>  Location of proxy, defaults to env[X509_USER_PROXY]\n\
@@ -259,6 +260,25 @@ function chooseCommand(opts, config) {
                 } else {
                     console.log('Nothing to do.');
                 }
+            });
+        });
+    } else if (opts.healthcheck) {
+        //read proxy
+        utils.readFile(config.proxyLocation, function (err, proxy) {
+            if (err) {
+                console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
+                process.exit(1);
+            }
+
+            var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
+            var basedProxy = new Buffer(proxy).toString('base64');
+
+            atmoClient.getApplianceSets(function (err, applianceSets) {
+                if (err) {
+                    console.log('Error, cloud environment seems unavailable!', err);
+                    process.exit(10);
+                }
+                //looks ok, simply exit
             });
         });
     }
