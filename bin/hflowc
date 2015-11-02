@@ -279,6 +279,7 @@ function chooseCommand(opts, config) {
                     process.exit(10);
                 }
                 //looks ok, simply exit
+                console.log('Cloud environment seems ok!');
             });
         });
     }
