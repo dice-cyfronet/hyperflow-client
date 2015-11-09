@@ -53,7 +53,7 @@ function chooseCommand(opts, config) {
     if (opts.setup) {
 
         //read proxy
-        utils.readFile(config.proxyLocation, function (err, proxy) {
+        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
                 return;
@@ -193,7 +193,7 @@ function chooseCommand(opts, config) {
             });
         });
     } else if (opts.runwf) {
-        utils.readFile(config.proxyLocation, function (err, proxy) {
+        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
                 return;
@@ -201,7 +201,7 @@ function chooseCommand(opts, config) {
             var basedProxy = new Buffer(proxy).toString('base64');
             var hyperFlowClient = hyperflowClientFactory.createClient(opts['<hf_location>'], basedProxy);
 
-            utils.readFile(opts['<workflow.json>'], function (err, workflow) {
+            utils.readFile(opts['<workflow.json>'], {}, function (err, workflow) {
                 if (err) {
                     console.log('Error reading wf:', err);
                     return;
@@ -218,7 +218,7 @@ function chooseCommand(opts, config) {
         });
     } else if (opts.teardown) {
         //read proxy
-        utils.readFile(config.proxyLocation, function (err, proxy) {
+        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
                 return;
@@ -264,7 +264,7 @@ function chooseCommand(opts, config) {
         });
     } else if (opts.healthcheck) {
         //read proxy
-        utils.readFile(config.proxyLocation, function (err, proxy) {
+        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
                 process.exit(1);
