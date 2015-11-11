@@ -5,7 +5,8 @@ var docopt = require('docopt').docopt,
     atmoClientFactory = require('../lib/atmosphere_client'),
     hyperflowClientFactory = require('../lib/hyperflow_client'),
     utils = require('../lib/utils.js'),
-    configHelper = require('../lib/hflowc.config.js');
+    configHelper = require('../lib/hflowc.config.js'),
+    crypto = require('crypto');
 
 var doc = '\
 Usage:\n\
@@ -198,8 +199,10 @@ function chooseCommand(opts, config) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
                 return;
             }
-            var basedProxy = new Buffer(proxy).toString('base64');
-            var hyperFlowClient = hyperflowClientFactory.createClient(opts['<hf_location>'], basedProxy);
+            var shasum = crypto.createHash('sha512');
+            shasum.update(proxy);
+            var shaProxy = shasum.digest('hex');
+            var hyperFlowClient = hyperflowClientFactory.createClient(opts['<hf_location>'], shaProxy);
 
             utils.readFile(opts['<workflow.json>'], {}, function (err, workflow) {
                 if (err) {
