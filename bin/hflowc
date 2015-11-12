@@ -64,6 +64,9 @@ function chooseCommand(opts, config) {
             var basedProxy = new Buffer(proxy).toString('base64');
             var workerCount = opts['--workers'] ? +opts['--workers'] : 1;
             var applianceSetId;
+            var shasum = crypto.createHash('sha512');
+            shasum.update(proxy);
+            var shaProxy = shasum.digest('hex');
 
             //create appliance set
             atmoClient.newApplianceSet(config.wfApplianceSetName, null, function (err, applianceSet) {
@@ -183,7 +186,7 @@ function chooseCommand(opts, config) {
                                         });
                                     });
 
-                                    var rabbitUrl = 'amqp://' + virtualMachine.ip + "/%2f";
+                                    var rabbitUrl = 'amqp://hf:' + shaProxy + '@' + virtualMachine.ip + "/%2f";
 
                                     //start workers
 
