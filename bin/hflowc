@@ -92,6 +92,23 @@ function chooseCommand(opts, config) {
                     });
                 }
 
+                function waitForAppliance(applianceId, cbWait, cb) {
+                    atmoClient.getAppliance(applianceId, function (err, appliance) {
+                        if (err) {
+                            cb(err);
+                            return;
+                        }
+                        if (appliance.virtual_machine_ids.length > 0) {
+                            cb(null, appliance);
+                            return;
+                        }
+                        cbWait();
+                        setTimeout(function () {
+                            waitForAppliance(applianceId, cbWait, cb)
+                        }, 2000);
+                    });
+                }
+
                 //create wfMain vm
                 atmoClient.newAppliance(
                     {
@@ -113,12 +130,14 @@ function chooseCommand(opts, config) {
                         var applianceId = appliance.id;
                         //var vmId = appliance.virtual_machine_ids[0];
 
-                        atmoClient.getAppliance(applianceId, function (err, applliance) {
+                        waitForAppliance(applianceId, function () {
+                            process.stdout.write('.');
+                        }, function (err, appliance) {
                             if (err) {
                                 console.log('Error getting appliance info!', err);
                                 return;
                             }
-
+                            console.log('wfMain has vmId!');
                             var vmId = appliance.virtual_machine_ids[0];
                             atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
                                 if (err) {
@@ -198,7 +217,6 @@ function chooseCommand(opts, config) {
                                     });
                                 });
                             });
-
                         });
                     }
                 );
