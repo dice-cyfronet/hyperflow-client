@@ -105,7 +105,7 @@ function chooseCommand(opts, config) {
                         cbWait();
                         setTimeout(function () {
                             waitForAppliance(applianceId, cbWait, cb)
-                        }, 2000);
+                        }, 500);
                     });
                 }
 
