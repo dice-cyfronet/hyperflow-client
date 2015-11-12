@@ -110,84 +110,95 @@ function chooseCommand(opts, config) {
 
                         //wait for wfMain to become active
 
-                        var vmId = appliance.virtual_machine_ids[0];
-                        atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
+                        var applianceId = appliance.id;
+                        //var vmId = appliance.virtual_machine_ids[0];
+
+                        atmoClient.getAppliance(applianceId, function (err, applliance) {
                             if (err) {
-                                console.log('Error getting vm!', err);
+                                console.log('Error getting appliance info!', err);
                                 return;
                             }
-                            process.stdout.write('waiting for wfMain to start');
-                            waitForVirtualMachine(vmId, function () {
-                                process.stdout.write('.');
-                            }, function (err, virtualMachine) {
+
+                            var vmId = appliance.virtual_machine_ids[0];
+                            atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
                                 if (err) {
-                                    console.log('Error waiting for vm!', err);
+                                    console.log('Error getting vm!', err);
                                     return;
                                 }
-
-                                console.log('wfMain is active!');
-                                //get and print hf location
-                                atmoClient.getPortMappings(function (err, portMappings) {
-                                    var hfIp,
-                                        hfPort,
-                                        portMappingTemplateId;
+                                process.stdout.write('waiting for wfMain to start');
+                                waitForVirtualMachine(vmId, function () {
+                                    process.stdout.write('.');
+                                }, function (err, virtualMachine) {
                                     if (err) {
-                                        console.log('Error getting port mappings!', err);
+                                        console.log('Error waiting for vm!', err);
                                         return;
                                     }
-                                    portMappings.forEach(function (portMapping) {
-                                        if (portMapping.virtual_machine_id == vmId) {
-                                            //found our vm!
-                                            hfIp = portMapping.public_ip;
-                                            hfPort = portMapping.source_port;
-                                            portMappingTemplateId = portMapping.port_mapping_template_id;
-                                            atmoClient.getPortMappingTemplate(portMappingTemplateId, function (err, portMappingTemplate) {
+
+                                    console.log('wfMain is active!');
+                                    //get and print hf location
+                                    atmoClient.getPortMappings(function (err, portMappings) {
+                                        var hfIp,
+                                            hfPort,
+                                            portMappingTemplateId;
+                                        if (err) {
+                                            console.log('Error getting port mappings!', err);
+                                            return;
+                                        }
+                                        portMappings.forEach(function (portMapping) {
+                                            if (portMapping.virtual_machine_id == vmId) {
+                                                //found our vm!
+                                                hfIp = portMapping.public_ip;
+                                                hfPort = portMapping.source_port;
+                                                portMappingTemplateId = portMapping.port_mapping_template_id;
+                                                atmoClient.getPortMappingTemplate(portMappingTemplateId, function (err, portMappingTemplate) {
+                                                    if (err) {
+                                                        console.log('Error getting port mapping template!', err);
+                                                        return;
+                                                    }
+                                                    var targetPort = portMappingTemplate.target_port;
+                                                    if (targetPort == 443) {
+                                                        console.log('Found port mapping ' + hfPort + '->' + targetPort + ', hfmain endoint: http://' + hfIp + ':' + hfPort);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    });
+
+                                    var rabbitUrl = 'amqp://' + virtualMachine.ip;
+
+                                    //start workers
+
+                                    async.times(workerCount, function (n, cb) {
+                                        var workerName = 'wfworker_' + n;
+                                        atmoClient.newAppliance(
+                                            {
+                                                setId: applianceSetId,
+                                                name: workerName,
+                                                templateId: config.wfWorkerId,
+                                                params: {
+                                                    rabbitmq_location: rabbitUrl,
+                                                    proxy: basedProxy
+                                                }
+                                            }, function (err, appliance) {
                                                 if (err) {
-                                                    console.log('Error getting port mapping template!', err);
+                                                    console.log('Error creating worker!', err);
+                                                    cb(err);
                                                     return;
                                                 }
-                                                var targetPort = portMappingTemplate.target_port;
-                                                if (targetPort == 443) {
-                                                    console.log('Found port mapping ' + hfPort + '->' + targetPort + ', hfmain endoint: http://' + hfIp + ':' + hfPort);
-                                                }
-                                            });
+                                                console.log('starting ' + workerName);
+                                                cb(null);
+                                            }
+                                        )
+                                    }, function (err, results) {
+                                        if (err) {
+                                            console.log('Error creating workers!', err);
+                                            return;
                                         }
+                                        console.log('Workers created');
                                     });
                                 });
-
-                                var rabbitUrl = 'amqp://' + virtualMachine.ip;
-
-                                //start workers
-
-                                async.times(workerCount, function (n, cb) {
-                                    var workerName = 'wfworker_' + n;
-                                    atmoClient.newAppliance(
-                                        {
-                                            setId: applianceSetId,
-                                            name: workerName,
-                                            templateId: config.wfWorkerId,
-                                            params: {
-                                                rabbitmq_location: rabbitUrl,
-                                                proxy: basedProxy
-                                            }
-                                        }, function (err, appliance) {
-                                            if (err) {
-                                                console.log('Error creating worker!', err);
-                                                cb(err);
-                                                return;
-                                            }
-                                            console.log('starting ' + workerName);
-                                            cb(null);
-                                        }
-                                    )
-                                }, function (err, results) {
-                                    if (err) {
-                                        console.log('Error creating workers!', err);
-                                        return;
-                                    }
-                                    console.log('Workers created');
-                                });
                             });
+
                         });
                     }
                 );
