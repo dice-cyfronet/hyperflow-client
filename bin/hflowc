@@ -183,7 +183,7 @@ function chooseCommand(opts, config) {
                                         });
                                     });
 
-                                    var rabbitUrl = 'amqp://' + virtualMachine.ip;
+                                    var rabbitUrl = 'amqp://' + virtualMachine.ip + "/%2f";
 
                                     //start workers
 
