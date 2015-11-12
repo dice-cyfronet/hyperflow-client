@@ -228,9 +228,8 @@ function chooseCommand(opts, config) {
                 console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
                 return;
             }
-            var basedProxy = new Buffer(proxy).toString('base64');
             var shasum = crypto.createHash('sha512');
-            shasum.update(basedProxy);
+            shasum.update(proxy);
             var shaProxy = shasum.digest('hex');
             var hyperFlowClient = hyperflowClientFactory.createClient(opts['<hf_location>'], shaProxy);
 
