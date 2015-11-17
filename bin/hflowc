@@ -301,8 +301,8 @@ function chooseCommand(opts, config) {
         //read proxy
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
-                console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
-                process.exit(1);
+                console.log('UNKNOWN: Error reading proxy! forgot to do a voms-proxy-init?', err);
+                process.exit(3);
             }
 
             var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
@@ -310,11 +310,12 @@ function chooseCommand(opts, config) {
 
             atmoClient.getApplianceSets(function (err, applianceSets) {
                 if (err) {
-                    console.log('Error, cloud environment seems unavailable!', err);
-                    process.exit(10);
+                    console.log('CRITICAL: Error, cloud environment seems unavailable!', err);
+                    process.exit(2);
                 }
                 //looks ok, simply exit
-                console.log('Cloud environment seems ok!');
+                console.log('OK: Cloud environment seems ok!');
+                process.exit(0);
             });
         });
     }
