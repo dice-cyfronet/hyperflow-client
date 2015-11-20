@@ -56,7 +56,7 @@ function chooseCommand(opts, config) {
         //read proxy
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
-                console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
+                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
                 return;
             }
 
@@ -228,7 +228,7 @@ function chooseCommand(opts, config) {
     } else if (opts.runwf) {
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
-                console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
+                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
                 return;
             }
             var shasum = crypto.createHash('sha512');
@@ -255,7 +255,7 @@ function chooseCommand(opts, config) {
         //read proxy
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
-                console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
+                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
                 return;
             }
 
@@ -301,7 +301,7 @@ function chooseCommand(opts, config) {
         //read proxy
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
-                console.log('Error reading proxy! forgot to do a voms-proxy-init?', err);
+                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
                 process.exit(1);
             }
 
