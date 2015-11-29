@@ -308,7 +308,7 @@ function chooseCommand(opts, config) {
             var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
             var basedProxy = new Buffer(proxy).toString('base64');
 
-            atmoClient.getApplianceSets(function (err, applianceSets) {
+            atmoClient.getCloudHealth(function (err) {
                 if (err) {
                     console.log('CRITICAL: Error, cloud environment seems unavailable!', err);
                     process.exit(2);
