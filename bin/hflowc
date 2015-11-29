@@ -301,7 +301,7 @@ function chooseCommand(opts, config) {
         //read proxy
         utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
             if (err) {
-                console.log('UNKNOWN: Error reading proxy! forgot to do a voms-proxy-init?', err);
+                console.log('UNKNOWN: Error reading proxy! forgot to do a grid-proxy-init?', err);
                 process.exit(3);
             }
 
