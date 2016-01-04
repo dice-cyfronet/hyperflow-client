@@ -1,6 +1,6 @@
 #!/bin/bash
 
-module load el6/test/hflowclient/1.0.0 2>/dev/null 1>/dev/null
+module load plgrid/tools/hflowclient/1.0.0 2>/dev/null 1>/dev/null
 
 hflowc healthcheck
 
