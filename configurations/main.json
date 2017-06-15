@@ -1,0 +1,22 @@
+{
+  "provider": {
+    "name": "atmosphere",
+    "url": "cloud.plgrid.pl",
+    "typeMappings": {
+      "wfmain": 66,
+      "wfworker": 63
+    },
+    "setname": "hfworkflow",
+    "proxy": "<proxy>"
+  },
+  "resources": {
+    "HyperFlow": {
+      "type": "wfmain"
+    },
+    "Worker": {
+      "type": "wfworker",
+      "count": 2,
+      "master": "Hyperflow"
+    }
+  }
+}

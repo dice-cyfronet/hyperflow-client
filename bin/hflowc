@@ -1,322 +1,41 @@
 #!/usr/bin/env node
 
 var docopt = require('docopt').docopt,
-    async = require('async'),
-    atmoClientFactory = require('../lib/atmosphere_client'),
-    hyperflowClientFactory = require('../lib/hyperflow_client'),
-    utils = require('../lib/utils.js'),
-    configHelper = require('../lib/hflowc.config.js'),
-    crypto = require('crypto');
+    utils = require('../lib/utils.js');
+
+var INFRASTRUCTURE_FILENAME = 'main.json';
 
 var doc = '\
 Usage:\n\
-    hflowc setup [-p <proxy_location>] [-c <config_location>] [-w <worker_count>]\n\
-    hflowc runwf <hf_location> <workflow.json> [-p <proxy_location>] [-c <config_location>]\n\
-    hflowc teardown [-p <proxy_location>] [-c <config_location>]\n\
-    hflowc healthcheck [-p <proxy_location>] [-c <config_location>]\n\
-    \n\
-Options:\n\
-    -p <proxy_location>, --proxy <proxy_location>  Location of proxy, defaults to env[X509_USER_PROXY]\n\
-    -c <config_location>, --config <config_location> Location of custom config file\n\
-    -w <worker_count>, --workers <worker_count> Number of worker vms to be used in workflow\n\
+    hflowc apply\n\
+    hflowc destroy\n\
 ';
 
 var opts = docopt(doc);
 
-
-//config stuff
-var config = configHelper.default_config;
-var configLocations = configHelper.configLocations;
-
-if (opts['--config']) {
-    configLocations.push(opts['--config']);
-}
-
-utils.loadConfigs(configLocations, function (localConfigs) {
-    localConfigs.forEach(function (localConfig) {
-        for (var attr in localConfig) {
-            if (localConfig.hasOwnProperty(attr)) {
-                config[attr] = localConfig[attr];
-            }
-        }
-    });
-
-    if (opts['--proxy']) {
-        config.proxyLocation = opts['--proxy'];
+//read infrastructure description
+utils.readFile(INFRASTRUCTURE_FILENAME, function (err, data) {
+    if (err) {
+        console.log('Unable to read main.json!');
+        return;
     }
 
-    //configs ready, choose operation
-    chooseCommand(opts, config);
+    var infra = JSON.parse(data);
+    var provierName = infra.provider.name;
+
+    try {
+        var provider = require('../lib/' + provierName + '_provider.js').createProvider(infra);
+    } catch (e) {
+        console.log("Unable to initialize " + provierName + " provider!");
+        return
+    }
+
+    if (opts.apply) {
+        provider.createInfrastructure();
+    } else if (opts.destroy) {
+        provider.destroyInfrastructure();
+    } else {
+        console.log("Command is missing");
+    }
+
 });
-
-
-function chooseCommand(opts, config) {
-    if (opts.setup) {
-
-        //read proxy
-        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
-            if (err) {
-                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
-                return;
-            }
-
-            var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
-            var basedProxy = new Buffer(proxy).toString('base64');
-            var workerCount = opts['--workers'] ? +opts['--workers'] : 1;
-            var applianceSetId;
-            var shasum = crypto.createHash('sha512');
-            shasum.update(proxy);
-            var shaProxy = shasum.digest('hex');
-
-            //create appliance set
-            atmoClient.newApplianceSet(config.wfApplianceSetName, null, function (err, applianceSet) {
-                if (err) {
-                    console.log('Error creating appliance set!', err);
-                    return;
-                }
-                console.log('Appliance set ' + applianceSet['name'] + ' created successfully!');
-                applianceSetId = applianceSet.id;
-
-
-                function waitForVirtualMachine(vmId, cbWait, cb) {
-                    atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
-                        if (err) {
-                            cb(err);
-                            return;
-                        }
-                        if (virtualMachine.state == 'active') {
-                            cb(null, virtualMachine);
-                            return;
-                        }
-                        cbWait();
-                        setTimeout(function () {
-                            waitForVirtualMachine(vmId, cbWait, cb)
-                        }, 2000);
-                    });
-                }
-
-                function waitForAppliance(applianceId, cbWait, cb) {
-                    atmoClient.getAppliance(applianceId, function (err, appliance) {
-                        if (err) {
-                            cb(err);
-                            return;
-                        }
-                        if (appliance.virtual_machine_ids.length > 0) {
-                            cb(null, appliance);
-                            return;
-                        }
-                        cbWait();
-                        setTimeout(function () {
-                            waitForAppliance(applianceId, cbWait, cb)
-                        }, 500);
-                    });
-                }
-
-                //create wfMain vm
-                atmoClient.newAppliance(
-                    {
-                        setId: applianceSetId,
-                        name: 'wfmain',
-                        templateId: config.wfMainId,
-                        params: {
-                            proxy: basedProxy
-                        }
-                    }, function (err, appliance) {
-                        if (err) {
-                            console.log('Error creating appliance!', err);
-                            return;
-                        }
-                        console.log('WfMain created successfully!');
-
-                        //wait for wfMain to become active
-
-                        var applianceId = appliance.id;
-                        //var vmId = appliance.virtual_machine_ids[0];
-
-                        waitForAppliance(applianceId, function () {
-                            process.stdout.write('.');
-                        }, function (err, appliance) {
-                            if (err) {
-                                console.log('Error getting appliance info!', err);
-                                return;
-                            }
-                            console.log('wfMain has vmId!');
-                            var vmId = appliance.virtual_machine_ids[0];
-                            atmoClient.getVirtualMachine(vmId, function (err, virtualMachine) {
-                                if (err) {
-                                    console.log('Error getting vm!', err);
-                                    return;
-                                }
-                                process.stdout.write('waiting for wfMain to start');
-                                waitForVirtualMachine(vmId, function () {
-                                    process.stdout.write('.');
-                                }, function (err, virtualMachine) {
-                                    if (err) {
-                                        console.log('Error waiting for vm!', err);
-                                        return;
-                                    }
-
-                                    console.log('wfMain is active!');
-                                    //get and print hf location
-                                    atmoClient.getPortMappings(function (err, portMappings) {
-                                        var hfIp,
-                                            hfPort,
-                                            portMappingTemplateId;
-                                        if (err) {
-                                            console.log('Error getting port mappings!', err);
-                                            return;
-                                        }
-                                        portMappings.forEach(function (portMapping) {
-                                            if (portMapping.virtual_machine_id == vmId) {
-                                                //found our vm!
-                                                hfIp = portMapping.public_ip;
-                                                hfPort = portMapping.source_port;
-                                                portMappingTemplateId = portMapping.port_mapping_template_id;
-                                                atmoClient.getPortMappingTemplate(portMappingTemplateId, function (err, portMappingTemplate) {
-                                                    if (err) {
-                                                        console.log('Error getting port mapping template!', err);
-                                                        return;
-                                                    }
-                                                    var targetPort = portMappingTemplate.target_port;
-                                                    if (targetPort == 443) {
-                                                        console.log('Found port mapping ' + hfPort + '->' + targetPort + ', hfmain endoint: http://' + hfIp + ':' + hfPort);
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    });
-
-                                    var rabbitUrl = 'amqp://hf:' + shaProxy + '@' + virtualMachine.ip + "/%2f";
-
-                                    //start workers
-
-                                    async.times(workerCount, function (n, cb) {
-                                        var workerName = 'wfworker_' + n;
-                                        atmoClient.newAppliance(
-                                            {
-                                                setId: applianceSetId,
-                                                name: workerName,
-                                                templateId: config.wfWorkerId,
-                                                params: {
-                                                    rabbitmq_location: rabbitUrl,
-                                                    proxy: basedProxy
-                                                }
-                                            }, function (err, appliance) {
-                                                if (err) {
-                                                    console.log('Error creating worker!', err);
-                                                    cb(err);
-                                                    return;
-                                                }
-                                                console.log('starting ' + workerName);
-                                                cb(null);
-                                            }
-                                        )
-                                    }, function (err, results) {
-                                        if (err) {
-                                            console.log('Error creating workers!', err);
-                                            return;
-                                        }
-                                        console.log('Workers created');
-                                    });
-                                });
-                            });
-                        });
-                    }
-                );
-            });
-        });
-    } else if (opts.runwf) {
-        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
-            if (err) {
-                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
-                return;
-            }
-            var shasum = crypto.createHash('sha512');
-            shasum.update(proxy);
-            var shaProxy = shasum.digest('hex');
-            var hyperFlowClient = hyperflowClientFactory.createClient(opts['<hf_location>'], shaProxy);
-
-            utils.readFile(opts['<workflow.json>'], {}, function (err, workflow) {
-                if (err) {
-                    console.log('Error reading wf:', err);
-                    return;
-                }
-
-                hyperFlowClient.runWorkflow(workflow, function (err, workflowLocation) {
-                    if (err) {
-                        console.log('Error running wf:', err);
-                        return;
-                    }
-                    console.log('workflow started: ', opts['<hf_location>'] + workflowLocation);
-                });
-            });
-        });
-    } else if (opts.teardown) {
-        //read proxy
-        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
-            if (err) {
-                console.log('Error reading proxy! forgot to do a grid-proxy-init?', err);
-                return;
-            }
-
-            var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
-            var basedProxy = new Buffer(proxy).toString('base64');
-
-            atmoClient.getApplianceSets(function (err, applianceSets) {
-                if (err) {
-                    console.log('Error getting appliance sets!', err);
-                    return;
-                }
-                var setsToRemove = {};
-                applianceSets.forEach(function (applianceSet) {
-                    if (applianceSet['name'] == config.wfApplianceSetName) {
-                        setsToRemove[applianceSet.id] = applianceSet['name'];
-                    }
-                });
-
-                //let's remove appliance sets
-                if (Object.keys(setsToRemove).length != 0) {
-                    async.map(Object.keys(setsToRemove), function (applianceSetId, cb) {
-                        console.log('Removing appliance set: ' + setsToRemove[applianceSetId]);
-                        atmoClient.deleteApplianceSet(applianceSetId, function (err) {
-                            if (err) {
-                                cb(err);
-                                return;
-                            }
-                            cb();
-                        });
-                    }, function (err, result) {
-                        if (err) {
-                            console.log('Error deleting appliance set!', err);
-                            return;
-                        }
-                        console.log('Done.');
-                    });
-                } else {
-                    console.log('Nothing to do.');
-                }
-            });
-        });
-    } else if (opts.healthcheck) {
-        //read proxy
-        utils.readFile(config.proxyLocation, {strict: true}, function (err, proxy) {
-            if (err) {
-                console.log('UNKNOWN: Error reading proxy! forgot to do a grid-proxy-init?', err);
-                process.exit(3);
-            }
-
-            var atmoClient = atmoClientFactory.createClient(config.atmoLocation, proxy);
-            var basedProxy = new Buffer(proxy).toString('base64');
-
-            atmoClient.getCloudHealth(function (err) {
-                if (err) {
-                    console.log('CRITICAL: Error, cloud environment seems unavailable!', err);
-                    process.exit(2);
-                }
-                //looks ok, simply exit
-                console.log('OK: Cloud environment seems ok!');
-                process.exit(0);
-            });
-        });
-    }
-}
