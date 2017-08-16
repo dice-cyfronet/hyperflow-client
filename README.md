@@ -6,23 +6,20 @@ Client for, [Hyperflow](http://github.com/dice-cyfronet/hyperflow) based, workfl
 
 ## Availability
 
-This software is available pre-installed on [Zeus UI](https://docs.plgrid.pl/pages/viewpage.action?pageId=4260595), which is the intended environment for this software. Stand-alone installation is also possible, but it is not officially supported.
+This software is currently available only for stand-alone installation.
 
 ## Usage
 
-Add custom directory of modules:
+After installation the client is available as `hflowc` command, which accepts the following actions:
 
-`$ export MODULEPATH=/mnt/gpfs/work/plgrid/groups/plgghflow/modules:$MODULEPATH`
+ * `apply` - creates an environment suitable for workflow execution
+ * `destroy` - shuts down all machines associated with workflow execution
 
-Enable hflow-client module
-
-`module add hflow-client`
-
-The Client is now available as `hflowc` command, which accepts the following actions:
-
- * `setup` - creates a cloud environment suitable for workflow execution, the result is a running HyperFlow instance with a bunch of workers, this command spits out an "HyperFlow endpoint location" which is needed for workflow execution
- * `runwf` - executes a given workflow
- * `teardown` - shuts down all machines associated with workflow execution
+ Client is aware of what needs to be done to create and destroy execution environment though configuration file,
+ which is supposed to be fund in current working directory. The configuration file should follow the provided example
+ and contain at least two blocks of code describing provider and resources to be provisioned on the available infrastructure.
+ Parameters of 'provider' and 'resources' are specific to the respective provider and resources, which it this case are
+ components of hyperflow.
 
 ## Manual installation procedure
 
@@ -35,10 +32,6 @@ The Client is now available as `hflowc` command, which accepts the following act
 
  * Clone the repository: `$ git clone https://github.com/dice-cyfronet/hyperflow-client.git`
  * Install dependencies: `$ npm install`
- 
-### Configuration
-
-The Client needs some basic configuration, which is done through the `hyperflow-client/lib/hflowc.config.js` config file.
 
 ### Running
 
