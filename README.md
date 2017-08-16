@@ -18,7 +18,7 @@ After installation the client is available as `hflowc` command, which accepts th
  Client is aware of what needs to be done to create and destroy execution environment though configuration file,
  which is supposed to be fund in current working directory. The configuration file should follow the provided example
  and contain at least two blocks of code describing provider and resources to be provisioned on the available infrastructure.
- Parameters of 'provider' and 'resources' are specific to the respective provider and resources, which it this case are
+ Parameters of `provider` and `resources` are specific to the respective provider and resources, which it this case are
  components of hyperflow.
 
 ## Manual installation procedure
