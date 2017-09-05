@@ -2,6 +2,7 @@
 
 module load el6/test/hflowclient/1.0.0 2>/dev/null 1>/dev/null
 
-hflowc healthcheck
+#fix HD-5454
+sg plgghflow hflowc healthcheck
 
 exit $?
