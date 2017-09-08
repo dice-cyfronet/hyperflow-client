@@ -1,8 +1,8 @@
 #!/bin/bash
 
-module load el6/test/hflowclient/1.0.0 2>/dev/null 1>/dev/null
+module add plgrid/tools/hflowclient/1.0.0 2>/dev/null 1>/dev/null
 
 #fix HD-5454
-sg plgghflow hflowc healthcheck
+sg plgghflow "hflowc healthcheck"
 
 exit $?
